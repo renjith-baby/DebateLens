@@ -2,554 +2,316 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DebateLens — Live Analysis Mockup</title>
+<title>DebateLens</title>
 <style>
   :root {
-    --bg: #0f1419;
-    --panel: #1a2028;
-    --panel-2: #232b36;
-    --border: #2d3744;
+    --bg: #14181d;
+    --card: #1c2128;
+    --line: #2a3038;
     --text: #e6edf3;
     --muted: #8b96a6;
-    --accent: #4d9eff;
-    --green: #3fb950;
-    --red: #f85149;
-    --yellow: #d29922;
-    --orange: #ff8a4c;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #facc15;
+    --orange: #fb923c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
   body {
     font-family: -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.55;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
+
   header {
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 24px;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--line);
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  .logo { font-weight: 700; font-size: 18px; letter-spacing: -0.5px; }
-  .logo .accent { color: var(--accent); }
-  .show-meta { color: var(--muted); font-size: 12px; }
-  .show-meta strong { color: var(--text); }
-  .live-pill {
-    background: var(--red);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 11px;
+  .logo {
     font-weight: 700;
-    letter-spacing: 0.5px;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+  }
+  .show {
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .show strong { color: var(--text); font-weight: 500; }
+  .live {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    color: var(--red);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
   }
   .live-dot {
     width: 8px; height: 8px;
-    background: white;
     border-radius: 50%;
+    background: var(--red);
     animation: pulse 1.5s infinite;
   }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  .grid {
-    display: grid;
-    grid-template-columns: 320px 1fr 320px;
-    gap: 16px;
-    padding: 16px 24px;
-  }
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-  }
-  .panel-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--muted);
-    margin-bottom: 12px;
-    font-weight: 600;
-  }
-
-  /* Speaker cards */
-  .speaker-card {
-    background: var(--panel-2);
-    border-radius: 6px;
-    padding: 14px;
-    margin-bottom: 12px;
-    border-left: 3px solid var(--accent);
-  }
-  .speaker-card.host { border-left-color: var(--orange); }
-  .speaker-name {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-  .speaker-role { color: var(--muted); font-size: 11px; margin-bottom: 12px; }
-  .score-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .score-label { font-size: 11px; color: var(--muted); }
-  .score-bar-wrap {
+  main {
     flex: 1;
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    margin: 0 10px;
-    overflow: hidden;
-  }
-  .score-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--green), var(--yellow));
-    border-radius: 3px;
-  }
-  .score-bar.low { background: linear-gradient(90deg, var(--red), var(--yellow)); }
-  .score-val { font-size: 12px; font-weight: 600; min-width: 32px; text-align: right; }
-  .stats-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
   }
-  .stat { text-align: center; }
-  .stat-num { font-size: 18px; font-weight: 700; }
-  .stat-num.green { color: var(--green); }
-  .stat-num.red { color: var(--red); }
-  .stat-num.yellow { color: var(--yellow); }
-  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
-  /* Claim feed */
-  .claim {
-    background: var(--panel-2);
-    border-radius: 6px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-    border-left: 3px solid var(--border);
+  .speaker {
+    background: var(--bg);
+    padding: 28px 32px;
+    overflow-y: auto;
   }
-  .claim.false { border-left-color: var(--red); }
-  .claim.true { border-left-color: var(--green); }
-  .claim.disputed { border-left-color: var(--yellow); }
-  .claim.unverifiable { border-left-color: var(--muted); }
-  .claim-head {
+  .speaker-name {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .speaker-role {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .stats {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-    font-size: 11px;
+    gap: 18px;
+    color: var(--muted);
+    font-size: 13px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 22px;
   }
-  .claim-speaker { font-weight: 600; }
-  .claim-time { color: var(--muted); font-family: ui-monospace, "SF Mono", monospace; }
-  .claim-text { font-size: 13px; margin-bottom: 8px; }
-  .claim-text .ml { font-style: italic; color: var(--muted); display: block; font-size: 12px; margin-bottom: 4px; }
-  .verdict {
-    display: inline-block;
-    font-size: 10px;
+  .stats .num {
+    color: var(--text);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stats .verified .num { color: var(--green); }
+  .stats .wrong .num { color: var(--red); }
+  .stats .flagged .num { color: var(--orange); }
+
+  .moment {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .moment:last-child { border-bottom: none; }
+  .icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 3px 8px;
-    border-radius: 3px;
+    margin-top: 1px;
   }
-  .verdict.false { background: rgba(248,81,73,0.15); color: var(--red); }
-  .verdict.true { background: rgba(63,185,80,0.15); color: var(--green); }
-  .verdict.disputed { background: rgba(210,153,34,0.15); color: var(--yellow); }
-  .verdict.unverifiable { background: rgba(139,150,166,0.15); color: var(--muted); }
-  .claim-evidence {
+  .icon.verified { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+  .icon.wrong    { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+  .icon.outdated { background: rgba(250, 204, 21, 0.15); color: var(--yellow); }
+  .icon.flag     { background: rgba(251, 146, 60, 0.15); color: var(--orange); }
+  .icon.unsure   { background: rgba(139, 150, 166, 0.15); color: var(--muted); }
+
+  .moment-body { flex: 1; min-width: 0; }
+  .moment-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 4px;
+  }
+  .moment-label.verified { color: var(--green); }
+  .moment-label.wrong    { color: var(--red); }
+  .moment-label.outdated { color: var(--yellow); }
+  .moment-label.flag     { color: var(--orange); }
+  .moment-label.unsure   { color: var(--muted); }
+
+  .moment-quote {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .moment-quote.italic { font-style: italic; }
+  .moment-note {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  footer {
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .now-label {
     color: var(--muted);
     font-size: 11px;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px dashed var(--border);
-  }
-
-  /* Fallacy panel */
-  .fallacy-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-  }
-  .fallacy-row:last-child { border-bottom: none; }
-  .fallacy-name { flex: 1; }
-  .fallacy-counts { display: flex; gap: 8px; }
-  .fallacy-count {
-    font-family: ui-monospace, "SF Mono", monospace;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 3px;
-    background: var(--panel-2);
-  }
-  .fallacy-count.guest { color: var(--accent); }
-  .fallacy-count.host { color: var(--orange); }
-
-  /* Topic timeline */
-  .topic-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    font-size: 12px;
-  }
-  .topic-time {
-    font-family: ui-monospace, monospace;
-    color: var(--muted);
-    font-size: 11px;
-    min-width: 40px;
-  }
-  .topic-pill {
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-size: 11px;
-    background: var(--panel-2);
-  }
-
-  /* Now-speaking ticker */
-  .ticker {
-    background: var(--panel);
-    border-top: 1px solid var(--border);
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    position: sticky;
-    bottom: 0;
-  }
-  .ticker-label {
-    font-size: 11px;
-    text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    flex-shrink: 0;
   }
-  .ticker-text {
+  .now-quote {
     flex: 1;
     font-style: italic;
-    color: var(--text);
+    font-size: 15px;
   }
-
-  .footer-note {
-    text-align: center;
-    color: var(--muted);
-    font-size: 11px;
-    padding: 12px;
-    border-top: 1px solid var(--border);
+  .now-verdict {
+    color: var(--yellow);
+    font-size: 13px;
+    flex-shrink: 0;
   }
+  .now-verdict strong { font-weight: 600; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Debate<span class="accent">Lens</span></div>
-  <div class="show-meta">
-    <strong>Janakeeya Kodathi</strong> · Maitreyan vs. V.V. Venugopan · 28 min elapsed
-  </div>
-  <div class="live-pill"><span class="live-dot"></span>LIVE — 47s lag</div>
+  <div class="logo">Debate Lens</div>
+  <div class="show"><strong>Janakeeya Kodathi</strong> &middot; Maitreyan vs. V.V. Venugopan &middot; 28 min in</div>
+  <div class="live"><span class="live-dot"></span>LIVE</div>
 </header>
 
-<div class="grid">
+<main>
 
-  <!-- LEFT: Speaker scorecards -->
-  <aside>
-    <div class="panel">
-      <div class="panel-title">Speaker Scorecards</div>
+  <!-- LEFT: Maitreyan -->
+  <section class="speaker">
+    <div class="speaker-name">Maitreyan</div>
+    <div class="speaker-role">Guest</div>
 
-      <div class="speaker-card">
-        <div class="speaker-name">Maitreyan</div>
-        <div class="speaker-role">Guest · Author / Activist</div>
+    <div class="stats">
+      <span class="verified"><span class="num">5</span> verified</span>
+      <span class="wrong"><span class="num">2</span> wrong</span>
+      <span class="flagged"><span class="num">4</span> flagged</span>
+    </div>
 
-        <div class="score-row">
-          <span class="score-label">Accuracy</span>
-          <div class="score-bar-wrap"><div class="score-bar low" style="width: 56%"></div></div>
-          <span class="score-val">56%</span>
-        </div>
-        <div class="score-row">
-          <span class="score-label">Civility</span>
-          <div class="score-bar-wrap"><div class="score-bar low" style="width: 38%"></div></div>
-          <span class="score-val">38%</span>
-        </div>
-        <div class="score-row">
-          <span class="score-label">Reasoning</span>
-          <div class="score-bar-wrap"><div class="score-bar" style="width: 64%"></div></div>
-          <span class="score-val">64%</span>
-        </div>
-
-        <div class="stats-row">
-          <div class="stat"><div class="stat-num green">5</div><div class="stat-label">Verified</div></div>
-          <div class="stat"><div class="stat-num red">2</div><div class="stat-label">False</div></div>
-          <div class="stat"><div class="stat-num yellow">14</div><div class="stat-label">Fallacies</div></div>
-        </div>
-      </div>
-
-      <div class="speaker-card host">
-        <div class="speaker-name">V.V. Venugopan</div>
-        <div class="speaker-role">Host · Moderator</div>
-
-        <div class="score-row">
-          <span class="score-label">Accuracy</span>
-          <div class="score-bar-wrap"><div class="score-bar" style="width: 67%"></div></div>
-          <span class="score-val">67%</span>
-        </div>
-        <div class="score-row">
-          <span class="score-label">Civility</span>
-          <div class="score-bar-wrap"><div class="score-bar" style="width: 78%"></div></div>
-          <span class="score-val">78%</span>
-        </div>
-        <div class="score-row">
-          <span class="score-label">Reasoning</span>
-          <div class="score-bar-wrap"><div class="score-bar low" style="width: 52%"></div></div>
-          <span class="score-val">52%</span>
-        </div>
-
-        <div class="stats-row">
-          <div class="stat"><div class="stat-num green">4</div><div class="stat-label">Verified</div></div>
-          <div class="stat"><div class="stat-num red">1</div><div class="stat-label">False</div></div>
-          <div class="stat"><div class="stat-num yellow">8</div><div class="stat-label">Fallacies</div></div>
-        </div>
+    <div class="moment">
+      <div class="icon wrong">&times;</div>
+      <div class="moment-body">
+        <div class="moment-label wrong">Not true</div>
+        <div class="moment-quote italic">"We dropped the atomic bomb only once."</div>
+        <div class="moment-note">Two bombings &mdash; Hiroshima on Aug 6 and Nagasaki on Aug 9, 1945.</div>
       </div>
     </div>
 
-    <div class="panel" style="margin-top:16px">
-      <div class="panel-title">Topic Timeline</div>
-      <div class="topic-row"><span class="topic-time">00:00</span><span class="topic-pill">Intro</span></div>
-      <div class="topic-row"><span class="topic-time">07:39</span><span class="topic-pill">Drug Policy</span></div>
-      <div class="topic-row"><span class="topic-time">19:06</span><span class="topic-pill">Nationalism</span></div>
-      <div class="topic-row"><span class="topic-time">23:00</span><span class="topic-pill">Borders / War</span></div>
-      <div class="topic-row"><span class="topic-time">26:00</span><span class="topic-pill">Nuclear Deterrence</span></div>
-    </div>
-  </aside>
-
-  <!-- CENTER: Claim feed -->
-  <main>
-    <div class="panel">
-      <div class="panel-title">Live Claim Feed (most recent first)</div>
-
-      <div class="claim false">
-        <div class="claim-head">
-          <span class="claim-speaker">Maitreyan</span>
-          <span class="claim-time">25:30</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"ആറ്റം ബോംബ് ഒരു തവണയെ നമ്മൾ ഇട്ടിട്ടുള്ളൂ. രണ്ടാമത് ഇട്ടിട്ടില്ല."</span>
-          "The atomic bomb has only been used once. It has not been used a second time."
-        </div>
-        <span class="verdict false">False</span>
-        <div class="claim-evidence">Hiroshima (Aug 6, 1945) and Nagasaki (Aug 9, 1945) were two separate atomic bombings, three days apart.</div>
-      </div>
-
-      <div class="claim disputed">
-        <div class="claim-head">
-          <span class="claim-speaker">Maitreyan</span>
-          <span class="claim-time">17:48</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"അഡിക്ഷൻ കണക്കിൽ കൊക്കൈൻ, ഒപിയം, എൽഎസ്ഡി, എംഡിഎംഎ കഴിഞ്ഞാൽ നാലാമത്തെ സ്ഥാനത്താണ് മദ്യം."</span>
-          "By addiction, alcohol ranks 4th — after cocaine, opium, LSD, MDMA."
-        </div>
-        <span class="verdict disputed">Disputed</span>
-        <div class="claim-evidence">Nutt et al. (Lancet 2010) ranked alcohol as the most harmful drug overall. By addiction potential alone, heroin and nicotine typically rank highest; LSD and MDMA score LOW on dependence. Ranking depends on the metric.</div>
-      </div>
-
-      <div class="claim false">
-        <div class="claim-head">
-          <span class="claim-speaker">Host (V.V. Venugopan)</span>
-          <span class="claim-time">15:39</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"ലീഗലൈസ്ഡ് ആയിട്ടുള്ള രാഷ്ട്രങ്ങൾ വളർത്തു മൂന്നോ നാലേ ഉള്ളൂ."</span>
-          "Only three or four countries have legalized [MDMA]."
-        </div>
-        <span class="verdict false">False</span>
-        <div class="claim-evidence">No country has legalized MDMA for recreational use. Australia approved it for PTSD therapy under medical supervision (2023). Some research permits exist elsewhere. Recreational legality: zero.</div>
-      </div>
-
-      <div class="claim true">
-        <div class="claim-head">
-          <span class="claim-speaker">Host (V.V. Venugopan)</span>
-          <span class="claim-time">09:51</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"മെഥിലിൻ ഡയോക്സി മെത്താമ്ഫിറ്റമിൻ എന്ന് പറയുന്ന മാരകമായ രാസലഹരി."</span>
-          "MDMA, methylenedioxy methamphetamine, a deadly chemical drug."
-        </div>
-        <span class="verdict true">Verified</span>
-        <div class="claim-evidence">Chemical name correctly stated: 3,4-Methylenedioxymethamphetamine. ("Deadly" is an editorial framing, not a factual claim.)</div>
-      </div>
-
-      <div class="claim disputed">
-        <div class="claim-head">
-          <span class="claim-speaker">Maitreyan</span>
-          <span class="claim-time">23:02</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"28 രാജ്യത്തിനകത്ത് ഷെങ്കൻ വിസയിൽ നടന്നു പോവുകയാണ്."</span>
-          "In the Schengen Area you can move freely across 28 countries."
-        </div>
-        <span class="verdict disputed">Outdated</span>
-        <div class="claim-evidence">Schengen now has 29 members (Croatia joined 2023; Bulgaria and Romania fully joined March 2024). 28 was correct until ~2022.</div>
-      </div>
-
-      <div class="claim true">
-        <div class="claim-head">
-          <span class="claim-speaker">Maitreyan</span>
-          <span class="claim-time">22:19</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"തിരുവിതാംകൂറും കൊച്ചിയും തമ്മിൽ യുദ്ധം ചെയ്തിട്ടുണ്ട്. ഇപ്പോ ഉണ്ടോ? ഇല്ല."</span>
-          "Travancore and Cochin used to fight wars. Do they now? No."
-        </div>
-        <span class="verdict true">Verified</span>
-        <div class="claim-evidence">Historically accurate. Travancore-Cochin conflicts documented in 18th-century history. Merged peacefully in 1949.</div>
-      </div>
-
-      <div class="claim disputed">
-        <div class="claim-head">
-          <span class="claim-speaker">Maitreyan</span>
-          <span class="claim-time">25:30</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"50 വർഷം മുമ്പ് ആയിരക്കണക്കിന് യുദ്ധങ്ങൾ. ഇന്ന് നാലും അഞ്ചും ആറും യുദ്ധം."</span>
-          "50 years ago, thousands of wars. Today, four or five or six per year."
-        </div>
-        <span class="verdict disputed">Oversimplified</span>
-        <div class="claim-evidence">"Long Peace" thesis (Pinker, Goldstein) supports broad decline in interstate war. But "thousands" is hyperbolic — UCDP data shows ~30 active armed conflicts in 1975, ~55 in 2023. Direction of trend is more nuanced than stated.</div>
-      </div>
-
-      <div class="claim unverifiable">
-        <div class="claim-head">
-          <span class="claim-speaker">Host (V.V. Venugopan)</span>
-          <span class="claim-time">09:18</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"നാലാം ക്ലാസ്സിൽ പഠിക്കുന്ന ഒരു വിദ്യാർത്ഥി എംഡിഎംഎ അഡിക്റ്റ് ആണെന്ന് ഒരു പോലീസ് ഉദ്യോഗസ്ഥൻ പറഞ്ഞു."</span>
-          "A 4th-grade student is reportedly addicted to MDMA, per a police officer."
-        </div>
-        <span class="verdict unverifiable">Source Required</span>
-        <div class="claim-evidence">Specific incident not located in publicly verifiable sources. Consistent with reported trends of drug use among Kerala minors (Excise Dept reports). Needs sourcing for on-air confirmation.</div>
-      </div>
-
-      <div class="claim unverifiable">
-        <div class="claim-head">
-          <span class="claim-speaker">Maitreyan</span>
-          <span class="claim-time">09:27</span>
-        </div>
-        <div class="claim-text">
-          <span class="ml">"20 വർഷം മുമ്പ് എ കെ ആന്റണിയോട് ഞാൻ പറഞ്ഞിട്ടുള്ളതാണ്."</span>
-          "I told A.K. Antony 20 years ago [that prohibition is criminal]."
-        </div>
-        <span class="verdict unverifiable">Unverifiable</span>
-        <div class="claim-evidence">No public record of this specific exchange located. Personal-history claim — would require interview/letter trail.</div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- RIGHT: Fallacies + alerts -->
-  <aside>
-    <div class="panel">
-      <div class="panel-title">Fallacy Counter</div>
-      <div class="fallacy-row">
-        <span class="fallacy-name">Ad hominem</span>
-        <div class="fallacy-counts">
-          <span class="fallacy-count guest">M: 8</span>
-          <span class="fallacy-count host">H: 0</span>
-        </div>
-      </div>
-      <div class="fallacy-row">
-        <span class="fallacy-name">Whataboutism</span>
-        <div class="fallacy-counts">
-          <span class="fallacy-count guest">M: 5</span>
-          <span class="fallacy-count host">H: 0</span>
-        </div>
-      </div>
-      <div class="fallacy-row">
-        <span class="fallacy-name">False equivalence</span>
-        <div class="fallacy-counts">
-          <span class="fallacy-count guest">M: 3</span>
-          <span class="fallacy-count host">H: 1</span>
-        </div>
-      </div>
-      <div class="fallacy-row">
-        <span class="fallacy-name">Appeal to emotion</span>
-        <div class="fallacy-counts">
-          <span class="fallacy-count guest">M: 0</span>
-          <span class="fallacy-count host">H: 3</span>
-        </div>
-      </div>
-      <div class="fallacy-row">
-        <span class="fallacy-name">Anecdotal evidence</span>
-        <div class="fallacy-counts">
-          <span class="fallacy-count guest">M: 0</span>
-          <span class="fallacy-count host">H: 2</span>
-        </div>
-      </div>
-      <div class="fallacy-row">
-        <span class="fallacy-name">Cherry-picking</span>
-        <div class="fallacy-counts">
-          <span class="fallacy-count guest">M: 2</span>
-          <span class="fallacy-count host">H: 0</span>
-        </div>
-      </div>
-      <div class="fallacy-row">
-        <span class="fallacy-name">Appeal to tradition</span>
-        <div class="fallacy-counts">
-          <span class="fallacy-count guest">M: 1</span>
-          <span class="fallacy-count host">H: 0</span>
-        </div>
-      </div>
-      <div class="fallacy-row">
-        <span class="fallacy-name">Loaded language</span>
-        <div class="fallacy-counts">
-          <span class="fallacy-count guest">M: 0</span>
-          <span class="fallacy-count host">H: 2</span>
-        </div>
+    <div class="moment">
+      <div class="icon flag">!</div>
+      <div class="moment-body">
+        <div class="moment-label flag">Personal attack</div>
+        <div class="moment-quote italic">"You are nobody important."</div>
+        <div class="moment-note">Attacks the host instead of answering the question.</div>
       </div>
     </div>
 
-    <div class="panel" style="margin-top:16px">
-      <div class="panel-title">Statistical Claims (auto-flagged)</div>
-      <div class="claim disputed" style="margin: 0 0 8px 0;">
-        <div class="claim-text" style="font-size:12px">"50,000 years of drug use"</div>
-        <span class="verdict disputed">Hyperbolic</span>
-      </div>
-      <div class="claim false" style="margin: 0 0 8px 0;">
-        <div class="claim-text" style="font-size:12px">"Atomic bomb dropped only once"</div>
-        <span class="verdict false">False</span>
-      </div>
-      <div class="claim disputed" style="margin: 0 0 8px 0;">
-        <div class="claim-text" style="font-size:12px">"Schengen has 28 countries"</div>
-        <span class="verdict disputed">Outdated (now 29)</span>
-      </div>
-      <div class="claim false" style="margin: 0;">
-        <div class="claim-text" style="font-size:12px">"Only 3-4 countries legalized MDMA"</div>
-        <span class="verdict false">False (zero)</span>
+    <div class="moment">
+      <div class="icon outdated">&#9888;</div>
+      <div class="moment-body">
+        <div class="moment-label outdated">Out of date</div>
+        <div class="moment-quote italic">"Schengen has 28 countries."</div>
+        <div class="moment-note">29 members since March 2024 (Bulgaria and Romania joined).</div>
       </div>
     </div>
-  </aside>
 
-</div>
+    <div class="moment">
+      <div class="icon flag">!</div>
+      <div class="moment-body">
+        <div class="moment-label flag">Changes the subject</div>
+        <div class="moment-quote italic">"What about the bombings in Gaza?"</div>
+        <div class="moment-note">Deflected the question about MDMA-related violence.</div>
+      </div>
+    </div>
 
-<div class="ticker">
-  <span class="ticker-label">Now Speaking · Maitreyan</span>
-  <span class="ticker-text">"…ഈ വിശാലമായ ശാന്തി കളയാടുന്നത് കൊണ്ടാണ് താൻ കോട്ടിട്ട് നിൽക്കുന്നത്."</span>
-  <span class="verdict disputed">Analyzing…</span>
-</div>
+    <div class="moment">
+      <div class="icon verified">&check;</div>
+      <div class="moment-body">
+        <div class="moment-label verified">True</div>
+        <div class="moment-quote italic">"Travancore and Cochin used to fight wars."</div>
+        <div class="moment-note">Documented in 18th-century Kerala history.</div>
+      </div>
+    </div>
+  </section>
 
-<div class="footer-note">
-  Mockup only · DebateLens design exploration · Data hand-curated from real transcript
-</div>
+  <!-- RIGHT: Host -->
+  <section class="speaker">
+    <div class="speaker-name">V.V. Venugopan</div>
+    <div class="speaker-role">Host</div>
+
+    <div class="stats">
+      <span class="verified"><span class="num">4</span> verified</span>
+      <span class="wrong"><span class="num">1</span> wrong</span>
+      <span class="flagged"><span class="num">2</span> flagged</span>
+    </div>
+
+    <div class="moment">
+      <div class="icon wrong">&times;</div>
+      <div class="moment-body">
+        <div class="moment-label wrong">Not true</div>
+        <div class="moment-quote italic">"Only three or four countries have legalized MDMA."</div>
+        <div class="moment-note">No country allows recreational use. Australia approved medical use only (2023).</div>
+      </div>
+    </div>
+
+    <div class="moment">
+      <div class="icon flag">!</div>
+      <div class="moment-body">
+        <div class="moment-label flag">One example, big claim</div>
+        <div class="moment-quote italic">"This Thamarassery case shows MDMA causes matricide."</div>
+        <div class="moment-note">Single incident used to argue a country-wide pattern.</div>
+      </div>
+    </div>
+
+    <div class="moment">
+      <div class="icon verified">&check;</div>
+      <div class="moment-body">
+        <div class="moment-label verified">True</div>
+        <div class="moment-quote italic">"MDMA stands for methylenedioxy methamphetamine."</div>
+        <div class="moment-note">Chemical name correctly stated.</div>
+      </div>
+    </div>
+
+    <div class="moment">
+      <div class="icon flag">!</div>
+      <div class="moment-body">
+        <div class="moment-label flag">Emotional pressure</div>
+        <div class="moment-quote italic">Graphic murder details used to argue policy.</div>
+        <div class="moment-note">Vivid description used as the main argument.</div>
+      </div>
+    </div>
+
+    <div class="moment">
+      <div class="icon unsure">?</div>
+      <div class="moment-body">
+        <div class="moment-label unsure">Couldn't verify</div>
+        <div class="moment-quote italic">"A 4th-grader was found addicted to MDMA."</div>
+        <div class="moment-note">No public source for this specific incident.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="now-label">Just now</div>
+  <div class="now-quote">"Schengen has 28 countries." &mdash; Maitreyan</div>
+  <div class="now-verdict"><strong>Out of date.</strong> 29 members since March 2024.</div>
+</footer>
 
 </body>
 </html>
