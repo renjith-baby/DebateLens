@@ -35,7 +35,7 @@ def load_settings(repo_root: Path | None = None) -> Settings:
         sarvam_api_key=sarvam,
         service_url=os.environ.get("DEBATELENS_SERVICE_URL", "http://localhost:8080"),
         out_dir=Path(os.environ.get("DEBATELENS_OUT_DIR", root / "output")),
-        model_fast=os.environ.get("DEBATELENS_GEMINI_MODEL_FAST", "gemini-2.0-flash"),
+        model_fast=os.environ.get("DEBATELENS_GEMINI_MODEL_FAST", "gemini-2.5-flash"),
         model_pro=os.environ.get("DEBATELENS_GEMINI_MODEL_PRO", "gemini-2.5-pro"),
         repo_root=root,
     )

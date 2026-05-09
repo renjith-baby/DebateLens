@@ -26,7 +26,9 @@ Thumbs.db
 # Project — large media stays out of git
 samples/audio/
 samples/video/
+output/
 *.mp4
 *.wav
 *.mp3
 *.m4a
+*.log

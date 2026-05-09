@@ -63,22 +63,18 @@ def supervised_service(
         str(port),
     ]
     env = os.environ.copy()
-    log_path = service_dir / "transcribe-service.log"
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-
-    log = log_path.open("a", encoding="utf-8")
     logger.info("starting transcribe-service: %s", " ".join(cmd))
     proc = subprocess.Popen(
         cmd,
         cwd=str(service_dir),
         env=env,
-        stdout=log,
-        stderr=subprocess.STDOUT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
         start_new_session=True,
     )
     try:
         _wait_for_port(host, port, timeout=30.0)
-        logger.info("transcribe-service ready at %s:%s (pid=%s, log=%s)", host, port, proc.pid, log_path)
+        logger.info("transcribe-service ready at %s:%s (pid=%s)", host, port, proc.pid)
         yield proc
     finally:
         try:
@@ -92,4 +88,3 @@ def supervised_service(
                 os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
             except ProcessLookupError:
                 pass
-        log.close()
