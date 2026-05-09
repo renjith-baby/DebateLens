@@ -1,0 +1,9 @@
+{
+  "segments": [
+    {"speaker": "1", "text": "We dropped the atomic bomb only once.", "start_time": 5.0, "end_time": 10.0},
+    {"speaker": "2", "text": "That is incorrect — there were two.", "start_time": 10.0, "end_time": 15.0},
+    {"speaker": "1", "text": "You are nobody important.", "start_time": 15.0, "end_time": 18.0},
+    {"speaker": "2", "text": "Schengen has 28 countries.", "start_time": 65.0, "end_time": 70.0}
+  ],
+  "language": "ml-IN"
+}
