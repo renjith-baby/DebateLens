@@ -6,10 +6,6 @@ RUN apt-get update \
 
 WORKDIR /app
 
-# Copy the sibling transcribing-module first so it can be installed as a dep.
-COPY transcribing-module /opt/transcribing-module
-RUN pip install --no-cache-dir /opt/transcribing-module
-
 COPY DebateLens/transcribe-service /app
 RUN pip install --no-cache-dir .
 

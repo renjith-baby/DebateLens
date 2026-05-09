@@ -6,11 +6,12 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI
 
-from transcriber.config import GoogleConfig, SarvamConfig
-
 from transcribe_service.api import health as health_api
 from transcribe_service.api import jobs as jobs_api
 from transcribe_service.config import Settings, get_settings
+from transcribe_service.engines.config import GoogleConfig, SarvamConfig
+from transcribe_service.engines.google_stt import GoogleEngine
+from transcribe_service.engines.sarvam import SarvamEngine
 from transcribe_service.jobs.runner import run_job
 from transcribe_service.jobs.store import InMemoryJsonStore, JobRecord
 from transcribe_service.jobs.worker import WorkerPool
@@ -21,12 +22,8 @@ logger = logging.getLogger(__name__)
 
 def _build_engine(name: str, settings: Settings):
     if name == "sarvam":
-        from transcriber.engines.sarvam import SarvamEngine
-
         return SarvamEngine(SarvamConfig(api_key=settings.sarvam_api_key))
     if name == "google":
-        from transcriber.engines.google_stt import GoogleEngine
-
         return GoogleEngine(
             GoogleConfig(
                 project_id=settings.google_cloud_project,

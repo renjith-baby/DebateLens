@@ -5,8 +5,8 @@ import httpx
 import pytest
 import respx
 
-from transcriber.engines.base import TranscriptionOptions
-from transcriber.output.models import Segment, TranscriptMetadata, TranscriptResult
+from transcribe_service.engines.base import TranscriptionOptions
+from transcribe_service.engines.models import Segment, TranscriptMetadata, TranscriptResult
 
 from transcribe_service.jobs.runner import run_job
 from transcribe_service.jobs.store import InMemoryJsonStore, JobRecord

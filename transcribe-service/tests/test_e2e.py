@@ -7,8 +7,8 @@ import pytest
 import respx
 from httpx import ASGITransport, AsyncClient
 
-from transcriber.engines.base import TranscriptionOptions
-from transcriber.output.models import Segment, TranscriptMetadata, TranscriptResult
+from transcribe_service.engines.base import TranscriptionOptions
+from transcribe_service.engines.models import Segment, TranscriptMetadata, TranscriptResult
 
 
 class FakeEngine:
