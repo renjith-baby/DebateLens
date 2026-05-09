@@ -55,11 +55,10 @@ async def _get_transcript(args, settings) -> Transcript:
         return Transcript.model_validate(raw)
 
     service_url = args.service_url or settings.service_url
-    service_dir = settings.repo_root / "transcribe-service"
 
     with supervised_service(
         base_url=service_url,
-        service_dir=service_dir,
+        service_dir=settings.repo_root,
         auto_start=not args.no_autostart,
     ):
         client = TranscribeClient(base_url=service_url)

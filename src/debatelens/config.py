@@ -19,16 +19,16 @@ class Settings:
 
 
 def load_settings(repo_root: Path | None = None) -> Settings:
-    root = (repo_root or Path(__file__).resolve().parents[3]).resolve()
+    # Unified layout: src/debatelens/config.py -> parents[2] is the repo root
+    root = (repo_root or Path(__file__).resolve().parents[2]).resolve()
     load_dotenv(root / ".env")
-    load_dotenv(root / "transcribe-service" / ".env", override=False)
 
     gemini = os.environ.get("GEMINI_API_KEY", "").strip()
     sarvam = os.environ.get("SARVAM_API_KEY", "").strip()
     if not gemini:
         raise RuntimeError("GEMINI_API_KEY is not set (put it in .env at repo root)")
     if not sarvam:
-        raise RuntimeError("SARVAM_API_KEY is not set (put it in transcribe-service/.env)")
+        raise RuntimeError("SARVAM_API_KEY is not set (put it in .env at repo root)")
 
     return Settings(
         gemini_api_key=gemini,

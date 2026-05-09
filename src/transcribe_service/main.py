@@ -10,7 +10,6 @@ from transcribe_service.api import health as health_api
 from transcribe_service.api import jobs as jobs_api
 from transcribe_service.config import Settings, get_settings
 from transcribe_service.engines.config import GoogleConfig, SarvamConfig
-from transcribe_service.engines.google_stt import GoogleEngine
 from transcribe_service.engines.sarvam import SarvamEngine
 from transcribe_service.jobs.runner import run_job
 from transcribe_service.jobs.store import InMemoryJsonStore, JobRecord
@@ -24,6 +23,7 @@ def _build_engine(name: str, settings: Settings):
     if name == "sarvam":
         return SarvamEngine(SarvamConfig(api_key=settings.sarvam_api_key))
     if name == "google":
+        from transcribe_service.engines.google_stt import GoogleEngine
         return GoogleEngine(
             GoogleConfig(
                 project_id=settings.google_cloud_project,
