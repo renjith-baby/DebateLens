@@ -79,6 +79,7 @@ class Moment(BaseModel):
     label: str
     quote: str
     note: str
+    timestamp_seconds: float | None = None
 
 
 class SpeakerStats(BaseModel):
@@ -110,6 +111,7 @@ class NowItem(BaseModel):
 class ShowMeta(BaseModel):
     title: str
     minutes: int = 0
+    youtube_video_id: str | None = None
 
 
 class AnalysisOutput(BaseModel):

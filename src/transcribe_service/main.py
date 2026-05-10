@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from transcribe_service.api import health as health_api
 from transcribe_service.api import jobs as jobs_api
+from transcribe_service.api import watch as watch_api
 from transcribe_service.config import Settings, get_settings
 from transcribe_service.engines.config import GoogleConfig, SarvamConfig
 from transcribe_service.engines.sarvam import SarvamEngine
@@ -104,3 +105,4 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="transcribe-service", version="0.1.0", lifespan=lifespan)
 app.include_router(jobs_api.router)
 app.include_router(health_api.router)
+app.include_router(watch_api.router)

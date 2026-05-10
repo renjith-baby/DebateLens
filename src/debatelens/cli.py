@@ -12,12 +12,26 @@ from debatelens.analysis.gemini_client import GeminiClient, GeminiConfig
 from debatelens.analysis.runner import AnalysisRunner, RunnerConfig
 from debatelens.config import load_settings
 from debatelens.models import Transcript
-from debatelens.render.dashboard import render_dashboard
+from debatelens.render.dashboard import render_dashboard, render_watch_page
 from debatelens.service_supervisor import supervised_service
 from debatelens.transcribe_client import TranscribeClient
 
 
 logger = logging.getLogger("debatelens")
+
+
+def _extract_youtube_id(url: str) -> str | None:
+    from urllib.parse import urlparse, parse_qs
+    try:
+        parsed = urlparse(url)
+        if parsed.hostname in ("youtu.be",):
+            return parsed.path.lstrip("/").split("?")[0] or None
+        if parsed.hostname in ("youtube.com", "www.youtube.com", "m.youtube.com"):
+            qs = parse_qs(parsed.query)
+            return (qs.get("v") or [None])[0]
+    except Exception:
+        pass
+    return None
 
 
 def _parse_speaker_names(spec: str | None) -> dict[str, str]:
@@ -104,18 +118,22 @@ async def main_async(argv: list[str] | None = None) -> int:
             model_pro=settings.model_pro,
         ),
     )
+    video_id = _extract_youtube_id(args.youtube) if args.youtube else None
     output = runner.run(
         transcript=transcript,
         show_title=args.show_title,
         speaker_names=_parse_speaker_names(args.speaker_names),
+        youtube_video_id=video_id,
     )
     (run_dir / "analysis.json").write_text(
         json.dumps(output.model_dump(), ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
     render_dashboard(output, run_dir / "dashboard.html")
+    render_watch_page(output, run_dir / "watch.html")
 
     print(f"\nDashboard: {run_dir / 'dashboard.html'}")
+    print(f"Watch:     {run_dir / 'watch.html'}")
     return 0
 
 

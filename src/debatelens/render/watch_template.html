@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏏 DebateLens Watch – {{ show.title }}</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --card: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --orange: #db6d28;
+    --blue: #388bfd;
+    --purple: #bc8cff;
+    --pitch-green: #1a472a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+  }
+  .logo-icon { font-size: 20px; }
+  .show-title {
+    color: var(--muted);
+    font-size: 13px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .show-title strong { color: var(--text); }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(248, 81, 73, 0.15);
+    border: 1px solid rgba(248, 81, 73, 0.4);
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: blink 1.2s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* ── Main layout ── */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    gap: 0;
+  }
+
+  /* ── Video column ── */
+  .video-col {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+    background: #000;
+  }
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 */
+    background: #000;
+  }
+  .video-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .no-video {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .no-video .big-emoji { font-size: 48px; }
+
+  /* Commentary ticker below video */
+  .commentary-bar {
+    background: var(--pitch-green);
+    border-top: 2px solid #2d6a3f;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a3e6b4;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    flex-shrink: 0;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
+  .commentary-text {
+    display: inline-block;
+    animation: none;
+  }
+  .commentary-text.scroll {
+    animation: ticker 12s linear forwards;
+  }
+  @keyframes ticker {
+    0%  { transform: translateX(0); }
+    100%{ transform: translateX(-110%); }
+  }
+
+  /* ── Overlay notifications ── */
+  .overlay-stack {
+    position: absolute;
+    bottom: 52px;
+    right: 12px;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    z-index: 100;
+    pointer-events: none;
+    max-width: 340px;
+  }
+  .overlay-card {
+    background: rgba(13,17,23,0.92);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    backdrop-filter: blur(6px);
+    animation: slideIn 0.3s ease;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: auto;
+  }
+  .overlay-card.dismissed {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  @keyframes slideIn {
+    from { opacity:0; transform: translateX(40px); }
+    to   { opacity:1; transform: translateX(0); }
+  }
+  .overlay-emoji { font-size: 22px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .overlay-body { flex: 1; min-width: 0; }
+  .overlay-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .overlay-tag.verified { color: var(--green); }
+  .overlay-tag.wrong    { color: var(--red); }
+  .overlay-tag.flag     { color: var(--orange); }
+  .overlay-tag.outdated { color: var(--yellow); }
+  .overlay-tag.unsure   { color: var(--muted); }
+  .overlay-speaker { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .overlay-quote {
+    font-size: 12px;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .overlay-note { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .overlay-close {
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+    padding: 2px;
+    pointer-events: auto;
+  }
+  .overlay-close:hover { color: var(--text); }
+
+  /* ── Scorecard sidebar ── */
+  .scorecard-col {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .scorecard-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .scorecard-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .innings-badge {
+    font-size: 11px;
+    background: var(--pitch-green);
+    color: #a3e6b4;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-weight: 700;
+  }
+
+  .scorecard-body { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+  .scorecard-body::-webkit-scrollbar { width: 4px; }
+  .scorecard-body::-webkit-scrollbar-track { background: transparent; }
+  .scorecard-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Batsman card */
+  .batsman-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .batsman-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .batsman-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .batsman-name { font-weight: 700; font-size: 14px; }
+  .batsman-role { font-size: 11px; color: var(--muted); }
+  .batsman-score-big {
+    margin-left: auto;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .score-runs {
+    font-size: 22px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .score-label { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; }
+
+  .batsman-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+  .stat-cell {
+    background: var(--card);
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .stat-val {
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .stat-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* Score bars */
+  .score-bars { padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; }
+  .score-row { display: flex; align-items: center; gap: 8px; }
+  .score-row-label { font-size: 11px; color: var(--muted); width: 68px; flex-shrink: 0; }
+  .score-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+  .score-bar-fill.accuracy  { background: var(--green); }
+  .score-bar-fill.civility  { background: var(--blue); }
+  .score-bar-fill.reasoning { background: var(--purple); }
+  .score-row-num { font-size: 11px; font-weight: 700; width: 28px; text-align: right; flex-shrink: 0; }
+
+  /* Form dots (last 6 events) */
+  .form-row {
+    padding: 8px 12px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .form-label { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; margin-right: 4px; }
+  .form-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  .form-dot.verified { background: var(--green); color: #000; }
+  .form-dot.wrong    { background: var(--red); color: #fff; }
+  .form-dot.flag     { background: var(--orange); color: #fff; }
+  .form-dot.outdated { background: var(--yellow); color: #000; }
+  .form-dot.unsure   { background: var(--border); color: var(--muted); }
+
+  /* Match log */
+  .match-log-section {
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .match-log-header {
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .match-log { max-height: 160px; overflow-y: auto; }
+  .match-log::-webkit-scrollbar { width: 4px; }
+  .match-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .log-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 16px;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    animation: fadeSlide 0.3s ease;
+  }
+  @keyframes fadeSlide {
+    from { opacity:0; transform: translateY(-6px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  .log-time { font-size: 10px; color: var(--muted); flex-shrink: 0; width: 34px; font-variant-numeric: tabular-nums; }
+  .log-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .log-dot.verified { background: var(--green); }
+  .log-dot.wrong    { background: var(--red); }
+  .log-dot.flag     { background: var(--orange); }
+  .log-dot.outdated { background: var(--yellow); }
+  .log-dot.unsure   { background: var(--muted); }
+  .log-text { flex: 1; font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .log-text strong { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<div class="header">
+  <div class="logo">
+    <span class="logo-icon">🏏</span>
+    DebateLens
+  </div>
+  <div class="show-title"><strong>{{ show.title }}</strong> · {{ show.minutes }} min</div>
+  <div class="live-badge"><span class="live-dot"></span>LIVE CHECK</div>
+</div>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<div class="main">
+
+  <!-- Video + overlays -->
+  <div class="video-col">
+    <div class="video-wrapper" id="videoWrapper">
+      {% if show.youtube_video_id %}
+      <div id="ytPlayer"></div>
+      {% else %}
+      <div class="no-video">
+        <span class="big-emoji">📺</span>
+        No YouTube video linked to this analysis.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Overlay notification stack -->
+    <div class="overlay-stack" id="overlayStack"></div>
+
+    <!-- Commentary ticker -->
+    <div class="commentary-bar">
+      <span class="commentary-text" id="commentaryText">🏏 DebateLens is watching the match… claims will be called as they happen.</span>
+    </div>
+  </div>
+
+  <!-- Cricket scorecard -->
+  <div class="scorecard-col">
+    <div class="scorecard-header">
+      <span class="scorecard-title">Scoreboard</span>
+      <span class="innings-badge">1st Innings</span>
+    </div>
+
+    <div class="scorecard-body" id="scorecardBody">
+      {% for sp_id, speaker in speakers.items() %}
+      <div class="batsman-card" id="card-{{ sp_id }}" data-speaker="{{ sp_id }}">
+        <div class="batsman-header">
+          <div class="batsman-avatar" style="background: {{ loop.cycle('rgba(63,185,80,0.2)', 'rgba(56,139,253,0.2)', 'rgba(188,140,255,0.2)', 'rgba(219,109,40,0.2)') }}; color: {{ loop.cycle('#3fb950','#388bfd','#bc8cff','#db6d28') }};">
+            {{ speaker.name[0] | upper }}
+          </div>
+          <div>
+            <div class="batsman-name">{{ speaker.name }}</div>
+            <div class="batsman-role">{{ speaker.role }}</div>
+          </div>
+          <div class="batsman-score-big">
+            <div class="score-runs" id="runs-{{ sp_id }}">{{ speaker.scores.accuracy }}</div>
+            <div class="score-label">ACCURACY</div>
+          </div>
+        </div>
+
+        <div class="batsman-stats">
+          <div class="stat-cell">
+            <div class="stat-val" style="color:var(--green)" id="verified-{{ sp_id }}">{{ speaker.stats.verified }}</div>
+            <div class="stat-lbl">Boundaries</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-val" style="color:var(--red)" id="wrong-{{ sp_id }}">{{ speaker.stats.wrong }}</div>
+            <div class="stat-lbl">Wickets</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-val" style="color:var(--orange)" id="flag-{{ sp_id }}">{{ speaker.stats.flagged }}</div>
+            <div class="stat-lbl">No Balls</div>
+          </div>
+        </div>
+
+        <div class="score-bars">
+          <div class="score-row">
+            <span class="score-row-label">Accuracy</span>
+            <div class="score-bar-track">
+              <div class="score-bar-fill accuracy" id="bar-accuracy-{{ sp_id }}" style="width:{{ speaker.scores.accuracy }}%"></div>
+            </div>
+            <span class="score-row-num" id="num-accuracy-{{ sp_id }}">{{ speaker.scores.accuracy }}</span>
+          </div>
+          <div class="score-row">
+            <span class="score-row-label">Fair Play</span>
+            <div class="score-bar-track">
+              <div class="score-bar-fill civility" id="bar-civility-{{ sp_id }}" style="width:{{ speaker.scores.civility }}%"></div>
+            </div>
+            <span class="score-row-num" id="num-civility-{{ sp_id }}">{{ speaker.scores.civility }}</span>
+          </div>
+          <div class="score-row">
+            <span class="score-row-label">Strike Rate</span>
+            <div class="score-bar-track">
+              <div class="score-bar-fill reasoning" id="bar-reasoning-{{ sp_id }}" style="width:{{ speaker.scores.reasoning }}%"></div>
+            </div>
+            <span class="score-row-num" id="num-reasoning-{{ sp_id }}">{{ speaker.scores.reasoning }}</span>
+          </div>
+        </div>
+
+        <div class="form-row" id="form-{{ sp_id }}">
+          <span class="form-label">Form</span>
+          <!-- dots populated by JS -->
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Ball-by-ball log -->
+    <div class="match-log-section">
+      <div class="match-log-header">Ball by Ball</div>
+      <div class="match-log" id="matchLog"></div>
+    </div>
+  </div>
+
+</div><!-- .main -->
+
+<!-- ═══════════════════ DATA & LOGIC ═══════════════════ -->
+<script>
+// ── Baked-in analysis data ──
+const VIDEO_ID = {{ video_id_js }};
+const TIMED_EVENTS = {{ timed_events_js }};
+const SPEAKERS = {{ speakers_js }};
+
+// ── Cricket copy ──
+const CRICKET = {
+  verified: { emoji: '🏏', tag: 'BOUNDARY!',   commentary: ['Clean hit! Verified.', 'Four runs! That checks out.', 'Straight down the ground — true fact!', 'Excellent stroke! Fully verified.'] },
+  wrong:    { emoji: '💀', tag: 'WICKET!',     commentary: ['Bowled out! That claim is false.', 'Clean bowled — fact check failed!', 'Gone! The stumps are rattled.', 'Caught behind — not true!'] },
+  flag:     { emoji: '🚨', tag: 'NO BALL!',    commentary: ['No ball called — logical foul play!', 'Umpire signals no ball. Fallacy detected.', 'That delivery is illegal. Foul!', 'No ball! That argument doesn\'t hold.'] },
+  outdated: { emoji: '📅', tag: 'DEAD BALL',   commentary: ['Dead ball — outdated info.', 'That claim has expired. Old data!', 'Stale delivery — data is outdated.'] },
+  unsure:   { emoji: '🤷', tag: 'DOT BALL',    commentary: ['Dot ball — couldn\'t verify that.', 'No run — claim unverifiable.', 'Defended — verdict unclear.'] },
+};
+
+function randPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ── Score state (starts at 100 for each speaker, decremented in real-time) ──
+const scoreState = {};
+{% for sp_id, speaker in speakers.items() %}
+scoreState['{{ sp_id }}'] = {
+  accuracy:  {{ speaker.scores.accuracy }},
+  civility:  {{ speaker.scores.civility }},
+  reasoning: {{ speaker.scores.reasoning }},
+  verified: 0, wrong: 0, flag: 0,
+  form: [],
+};
+{% endfor %}
+
+// Reset to 100 — we'll replay deltas as events fire
+{% for sp_id in speakers %}
+scoreState['{{ sp_id }}'].accuracy  = 100;
+scoreState['{{ sp_id }}'].civility  = 100;
+scoreState['{{ sp_id }}'].reasoning = 100;
+{% endfor %}
+
+function clamp(n) { return Math.max(0, Math.min(100, n)); }
+
+// ── Apply a timed event ──
+function applyEvent(ev) {
+  const sp = ev.speaker_id;
+  const st = scoreState[sp];
+  if (!st) return;
+
+  // Update score state
+  if (ev.kind === 'verified') { st.verified++; }
+  else if (ev.kind === 'wrong') { st.wrong++; st.accuracy = clamp(st.accuracy - 25); }
+  else if (ev.kind === 'outdated') { st.wrong++; st.accuracy = clamp(st.accuracy - 10); }
+  else if (ev.kind === 'unsure') { /* no penalty */ }
+  else if (ev.kind === 'flag') {
+    st.flag++;
+    st.civility  = clamp(st.civility  - 12);
+    st.reasoning = clamp(st.reasoning - 8);
+  }
+
+  st.form.push(ev.kind);
+  if (st.form.length > 6) st.form.shift();
+
+  // Update DOM
+  updateScorecard(sp, st);
+  showOverlay(ev);
+  addLogEntry(ev);
+  updateCommentary(ev);
+}
+
+function updateScorecard(sp, st) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setW = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = pct + '%'; };
+  set(`runs-${sp}`, st.accuracy);
+  set(`verified-${sp}`, st.verified);
+  set(`wrong-${sp}`, st.wrong);
+  set(`flag-${sp}`, st.flag);
+  setW(`bar-accuracy-${sp}`,  st.accuracy);
+  setW(`bar-civility-${sp}`,  st.civility);
+  setW(`bar-reasoning-${sp}`, st.reasoning);
+  set(`num-accuracy-${sp}`,   st.accuracy);
+  set(`num-civility-${sp}`,   st.civility);
+  set(`num-reasoning-${sp}`,  st.reasoning);
+
+  // Form dots
+  const formEl = document.getElementById(`form-${sp}`);
+  if (formEl) {
+    const dots = st.form.map(k => `<span class="form-dot ${k}" title="${k}">${CRICKET[k]?.emoji || '?'}</span>`).join('');
+    formEl.innerHTML = `<span class="form-label">Form</span>${dots}`;
+  }
+
+  // Flash card
+  const card = document.getElementById(`card-${sp}`);
+  if (card) {
+    card.style.transition = 'box-shadow 0.1s';
+    card.style.boxShadow = '0 0 0 2px var(--green)';
+    setTimeout(() => { card.style.boxShadow = ''; }, 600);
+  }
+}
+
+// ── Overlay notification ──
+function showOverlay(ev) {
+  const c = CRICKET[ev.kind] || CRICKET.unsure;
+  const stack = document.getElementById('overlayStack');
+  const card = document.createElement('div');
+  card.className = 'overlay-card';
+  card.innerHTML = `
+    <span class="overlay-emoji">${c.emoji}</span>
+    <div class="overlay-body">
+      <div class="overlay-tag ${ev.kind}">${c.tag}</div>
+      <div class="overlay-speaker">${ev.speaker_name}</div>
+      <div class="overlay-quote">${escHtml(ev.quote)}</div>
+      <div class="overlay-note">${escHtml(ev.note)}</div>
+    </div>
+    <span class="overlay-close" onclick="dismissCard(this.parentElement)">✕</span>
+  `;
+  stack.appendChild(card);
+  // Auto-dismiss
+  setTimeout(() => dismissCard(card), 7000);
+  // Max 4 visible
+  while (stack.children.length > 4) dismissCard(stack.firstElementChild);
+}
+
+function dismissCard(card) {
+  if (!card || !card.parentElement) return;
+  card.classList.add('dismissed');
+  setTimeout(() => card.remove(), 400);
+}
+
+// ── Log entry ──
+function addLogEntry(ev) {
+  const log = document.getElementById('matchLog');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `
+    <span class="log-time">${fmtTime(ev.timestamp_seconds)}</span>
+    <span class="log-dot ${ev.kind}"></span>
+    <span class="log-text"><strong>${escHtml(ev.speaker_name)}</strong> — ${escHtml(ev.note)}</span>
+  `;
+  log.insertBefore(entry, log.firstChild);
+}
+
+// ── Commentary bar ──
+const commentaries = [
+  '🏏 DebateLens is watching the match…',
+  '📡 Fact-checking in progress…',
+  '🎙️ The debate is heating up!',
+  '⚡ Claims flying from both ends of the pitch…',
+];
+let commentaryIdx = 0;
+function updateCommentary(ev) {
+  const el = document.getElementById('commentaryText');
+  if (!el) return;
+  const c = CRICKET[ev.kind] || CRICKET.unsure;
+  el.textContent = `${c.emoji} ${randPick(c.commentary)} — ${ev.speaker_name} at ${fmtTime(ev.timestamp_seconds)}`;
+}
+function rotateCommentary() {
+  const el = document.getElementById('commentaryText');
+  if (!el || document.querySelector('.overlay-card')) return;
+  el.textContent = commentaries[commentaryIdx % commentaries.length];
+  commentaryIdx++;
+}
+setInterval(rotateCommentary, 8000);
+
+// ── Helpers ──
+function fmtTime(s) {
+  if (s == null) return '--:--';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── YouTube IFrame API ──
+let player = null;
+let eventsCursor = 0; // index into sorted TIMED_EVENTS
+
+// Sort events by timestamp ascending
+const sortedEvents = [...TIMED_EVENTS].sort((a,b) => (a.timestamp_seconds||0) - (b.timestamp_seconds||0));
+
+if (VIDEO_ID) {
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
+window.onYouTubeIframeAPIReady = function() {
+  player = new YT.Player('ytPlayer', {
+    videoId: VIDEO_ID,
+    playerVars: { autoplay: 0, rel: 0, modestbranding: 1 },
+    events: { onReady: onPlayerReady, onStateChange: onPlayerState },
+  });
+};
+
+function onPlayerReady(e) {
+  // Fix the wrapper height now that player is real
+  const wrap = document.getElementById('videoWrapper');
+  if (wrap) wrap.style.paddingTop = '';
+}
+
+let pollTimer = null;
+function onPlayerState(e) {
+  if (e.data === YT.PlayerState.PLAYING) {
+    if (!pollTimer) pollTimer = setInterval(pollPlayer, 333);
+  } else {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+function pollPlayer() {
+  if (!player || typeof player.getCurrentTime !== 'function') return;
+  const t = player.getCurrentTime();
+  while (eventsCursor < sortedEvents.length) {
+    const ev = sortedEvents[eventsCursor];
+    if ((ev.timestamp_seconds || 0) <= t) {
+      applyEvent(ev);
+      eventsCursor++;
+    } else {
+      break;
+    }
+  }
+}
+</script>
+</body>
+</html>

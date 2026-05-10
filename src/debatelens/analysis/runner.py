@@ -53,6 +53,7 @@ class AnalysisRunner:
         transcript: Transcript,
         show_title: str,
         speaker_names: dict[str, str],
+        youtube_video_id: str | None = None,
     ) -> AnalysisOutput:
         speaker_set: set[str] = {seg.speaker for seg in transcript.segments}
         show_metadata = self._build_show_metadata(show_title, speaker_names, speaker_set)
@@ -88,6 +89,7 @@ class AnalysisRunner:
                 label=_label_for_kind(kind),
                 quote=claim.get("claim_en") or claim.get("claim_ml") or "",
                 note=verdict.one_liner,
+                timestamp_seconds=_parse_timestamp_seconds(claim.get("video_timestamp")),
             )
             moments_per_speaker.setdefault(speaker_id, []).append(moment)
             last_moment = (speaker_id, moment)
@@ -106,6 +108,7 @@ class AnalysisRunner:
                 label=_fallacy_label(fallacy.fallacy_type),
                 quote=fallacy.quote_en,
                 note=fallacy.explanation,
+                timestamp_seconds=_parse_timestamp_seconds(fallacy.video_timestamp),
             )
             moments_per_speaker.setdefault(speaker_id, []).append(moment)
             last_moment = (speaker_id, moment)
@@ -139,7 +142,7 @@ class AnalysisRunner:
 
         total_seconds = transcript.segments[-1].end_time if transcript.segments else 0.0
         return AnalysisOutput(
-            show=ShowMeta(title=show_title, minutes=int(total_seconds // 60)),
+            show=ShowMeta(title=show_title, minutes=int(total_seconds // 60), youtube_video_id=youtube_video_id),
             speakers=speakers_out,
             now=now,
         )
@@ -320,6 +323,22 @@ Return ONE JSON object with exactly these top-level keys:
 ```
 
 Empty arrays if nothing applies. Return ONLY the JSON object, no prose, no markdown fences."""
+
+
+def _parse_timestamp_seconds(ts: str | float | int | None) -> float | None:
+    if ts is None:
+        return None
+    if isinstance(ts, (int, float)):
+        return float(ts)
+    parts = str(ts).strip().split(":")
+    try:
+        if len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+        if len(parts) == 2:
+            return int(parts[0]) * 60 + float(parts[1])
+        return float(parts[0])
+    except (ValueError, IndexError):
+        return None
 
 
 def _person_id(name: str) -> str:
